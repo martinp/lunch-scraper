@@ -1,0 +1,4 @@
+lunch-scraper
+pkg/
+src/
+*.test

@@ -3,7 +3,7 @@ package main
 import (
     "errors"
     "github.com/PuerkitoBio/goquery"
-    "github.com/martinp/docopt-go"
+    "github.com/docopt/docopt-go"
     "io/ioutil"
     _log "log"
     "net/http"

@@ -8,7 +8,7 @@ fmt:
 
 deps:
 	go get -u github.com/PuerkitoBio/goquery
-	go get -u github.com/martinp/docopt-go
+	go get -u github.com/docopt/docopt-go
 
 build:
 	go build -o $(NAME) main.go

@@ -14,4 +14,4 @@ build:
 	go build -o bin/$(NAME)
 
 install:
-	cp $(NAME) $(PREFIX)/bin/$(NAME)
+	cp bin/$(NAME) $(PREFIX)/bin/$(NAME)

@@ -1,20 +1,17 @@
 PREFIX ?= /usr/local
 NAME=lunch-scraper
 
-all: test build
+all: deps build
 
 fmt:
-	gofmt -tabs=false -tabwidth=4 -w=true *.go
+	gofmt -w=true *.go
 
 deps:
-	go get -u github.com/PuerkitoBio/goquery
-	go get -u github.com/docopt/docopt-go
+	go get -d -v
 
 build:
-	go build -o $(NAME) main.go
-
-test:
-	go test
+	@mkdir -p bin
+	go build -o bin/$(NAME)
 
 install:
 	cp $(NAME) $(PREFIX)/bin/$(NAME)

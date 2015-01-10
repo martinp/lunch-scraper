@@ -1,11 +1,11 @@
 package main
 
 import (
-	"errors"
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/docopt/docopt-go"
+	"github.com/jessevdk/go-flags"
 	"io/ioutil"
-	_log "log"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -14,8 +14,6 @@ import (
 
 const URL = "http://www.dagbladet.no/tegneserie/lunch/"
 
-var log *_log.Logger
-
 func GetImageUrl() (string, error) {
 	doc, err := goquery.NewDocument(URL)
 	if err != nil {
@@ -23,11 +21,11 @@ func GetImageUrl() (string, error) {
 	}
 	selection := doc.Find("img#lunch-stripe")
 	if len(selection.Nodes) == 0 {
-		return "", errors.New("Node was not found")
+		return "", fmt.Errorf("node not found")
 	}
 	src, exists := selection.First().Attr("src")
 	if !exists {
-		return "", errors.New("Node is missing the 'src' attribute")
+		return "", fmt.Errorf("src attribute not found")
 	}
 	return src, nil
 }
@@ -56,69 +54,43 @@ func IsExists(path string) bool {
 	return err == nil
 }
 
-func WriteFile(path string, filename string, data []byte, force bool,
-	quiet bool) {
+func WriteFile(path string, filename string, data []byte, force bool) (string, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		log.Fatalf("Path does not exist: %s", path)
+		return "", err
 	}
 	dst := filepath.Join(path, filepath.Base(filename))
 	if IsExists(dst) && !force {
-		if !quiet {
-			log.Printf("File already exists: %s", dst)
-		}
-		return
+		return "", fmt.Errorf("file exists: %s", dst)
 	}
 	if err := ioutil.WriteFile(dst, data, 0644); err != nil {
-		log.Fatalf("Failed to write file: %s", dst)
+		return "", err
 	}
-	if !quiet {
-		log.Printf("Wrote file: %s", dst)
-	}
-}
-
-func parseDirOption(arguments map[string]interface{}) string {
-	arg := arguments["--dir"]
-	if arg == nil {
-		wd, err := os.Getwd()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		dir, err := filepath.Rel(wd, wd)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		return dir
-	}
-	return arg.(string)
+	return dst, nil
 }
 
 func main() {
-	log = _log.New(os.Stderr, "", 0)
-
-	usage := `Tool for scraping Lunch comic strips
-
-    Usage:
-      lunch-scraper [-q] [-f] [-d DIR]
-      lunch-scraper -h | --help
-
-    Options:
-      -h --help             Show help.
-      -q --quiet            Be quiet.
-      -f --force            Overwrite if file already exists.
-      -d --dir=DIR          Downloaded file to DIR instead of working directory.`
-
-	arguments, _ := docopt.Parse(usage, nil, true, "", false)
-	quiet := arguments["--quiet"].(bool)
-	force := arguments["--force"].(bool)
-	path := parseDirOption(arguments)
-
+	var opts struct {
+		Quiet bool   `short:"q" long:"quiet" description:"Be quiet"`
+		Force bool   `short:"f" long:"force" description:"Overwrite existing file"`
+		Dir   string `short:"d" long:"dir" description:"Directory where file should be saved" value-name:"DIR" required:"true"`
+	}
+	_, err := flags.ParseArgs(&opts, os.Args)
+	if err != nil {
+		os.Exit(1)
+	}
 	url, err := GetImageUrl()
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 	data, err := GetImage(url)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
-	WriteFile(path, GetFilename(), data, force, quiet)
+	dst, err := WriteFile(opts.Dir, GetFilename(), data, opts.Force)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !opts.Quiet {
+		log.Printf("Wrote file: %s", dst)
+	}
 }

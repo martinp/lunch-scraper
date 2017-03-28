@@ -19,7 +19,7 @@ func GetImageUrl() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	selection := doc.Find("img#lunch-stripe")
+	selection := doc.Find("img.image_comic")
 	if len(selection.Nodes) == 0 {
 		return "", fmt.Errorf("node not found")
 	}

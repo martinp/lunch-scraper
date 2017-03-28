@@ -1,17 +1,16 @@
-PREFIX ?= /usr/local
-NAME=lunch-scraper
-
-all: deps build
+all: deps test install vet
 
 fmt:
-	gofmt -w=true *.go
+	go fmt ./...
+
+test:
+	go test ./...
+
+vet:
+	go vet ./...
 
 deps:
-	go get -d -v
-
-build:
-	@mkdir -p bin
-	go build -o bin/$(NAME)
+	go get -d -v ./...
 
 install:
-	cp bin/$(NAME) $(PREFIX)/bin/$(NAME)
+	go install

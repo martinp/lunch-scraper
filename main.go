@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/jessevdk/go-flags"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/jessevdk/go-flags"
 )
 
-const URL = "http://www.dagbladet.no/tegneserie/lunch/"
+const URL = "https://www.dagbladet.no/tegneserie/lunch/"
 
 func GetImageUrl() (string, error) {
 	doc, err := goquery.NewDocument(URL)
